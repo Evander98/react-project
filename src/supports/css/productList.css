@@ -1,0 +1,23 @@
+.discount {
+    background-color: #0275d8;
+    color: white;
+    position: absolute;
+    top: 10px;
+    right: 0;
+    text-align: center;
+    width: 80px;
+    border-top-left-radius: 80px;
+    border-bottom-left-radius: 80px;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.price-before-discount {
+    text-decoration: line-through;
+    color : #606060;
+    font-size: 14px;
+    display: inline;
+    margin-right:10px;
+}
