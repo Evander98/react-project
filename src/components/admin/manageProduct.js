@@ -19,8 +19,12 @@ import { urlAPI } from '../../supports/urlAPI'
 import { connect } from 'react-redux'
 import PageNotFound from '../404'
 import Axios from 'axios';
+import cookie from 'universal-cookie'
 import swal from 'sweetalert'
+import Swal2 from 'sweetalert2'
 
+
+const objCookie = new cookie()
 
 const actionsStyles = theme => ({
     root: {
@@ -124,11 +128,12 @@ class CustomPaginationActionsTable extends React.Component {
     };
 
     componentDidMount(){
-        this.getDataApi()
+        var cookies = objCookie.get('userId')
+        this.getDataApi(cookies)
     }
 
-    getDataApi = () => {
-        Axios.get(urlAPI + '/products?idAdmin=' + this.props.id)
+    getDataApi = (userId) => {
+        Axios.get(urlAPI + '/products?idAdmin=' + userId)
         .then((res) => {console.log(res); this.setState({rows: res.data})})
         .catch((err) => console.log(err))
     }
@@ -140,6 +145,11 @@ class CustomPaginationActionsTable extends React.Component {
     handleChangeRowsPerPage = event => {
         this.setState({ page: 0, rowsPerPage: event.target.value });
     };
+
+    capitalize = (s) => {
+        if (typeof s !== 'string') return ''
+        return s.charAt(0).toUpperCase() + s.slice(1)
+    }
 
     onBtnAdd = () => {
         var nama = this.nama.inputRef.value
@@ -153,7 +163,7 @@ class CustomPaginationActionsTable extends React.Component {
         if(nama === '' || harga === '' || stock === '' || discount === '' || category === '' || img === '' || deskripsi === ''){
             swal("Wait!", "Fill all the forms!", "error")
         } else{
-            var newData = {nama, harga : parseInt(harga), stock : parseInt(stock), discount : parseInt(discount), category, img, deskripsi, idAdmin}
+            var newData = {nama, harga : parseInt(harga), stock : parseInt(stock), discount : parseInt(discount), category : this.capitalize(category), img, deskripsi, idAdmin}
             Axios.post(urlAPI + '/products', newData)
             .then((res) => {
                 swal("Add Product", "Add Product Success", "success")
@@ -187,7 +197,7 @@ class CustomPaginationActionsTable extends React.Component {
         var img = this.imgEdit.inputRef.value === '' ? this.state.editItem.img : this.imgEdit.inputRef.value
         var deskripsi = this.deskripsiEdit.inputRef.value === '' ? this.state.editItem.deskripsi : this.deskripsiEdit.inputRef.value
         var idAdmin = this.props.id
-        var newData = {nama, harga : parseInt(harga), stock : parseInt(stock), discount : parseInt(discount), category, img, deskripsi, idAdmin}
+        var newData = {nama, harga : parseInt(harga), stock : parseInt(stock), discount : parseInt(discount), category : this.capitalize(category), img, deskripsi, idAdmin}
         Axios.put(urlAPI + '/products/' + this.state.editItem.id, newData)
         .then((res) => {
             this.getDataApi()
@@ -202,7 +212,8 @@ class CustomPaginationActionsTable extends React.Component {
     onBtnDelete = (id) => {
         Axios.delete(urlAPI + '/products/' + id)
         .then((res) => {
-            this.getDataApi()
+            var cookies = objCookie.get('userId')
+            this.getDataApi(cookies)
         })
         .catch((err) => console.log(err))
     }
@@ -217,9 +228,16 @@ class CustomPaginationActionsTable extends React.Component {
                     <TableCell>{val.stock}</TableCell>
                     <TableCell>{val.discount}</TableCell>
                     <TableCell>{val.category}</TableCell>
-                    <TableCell><img src={val.img} width='100px' alt={val.nama}/></TableCell>
+                    <TableCell><img src={val.img} className='pointer' onClick={() => Swal2.fire({imageUrl: val.img, imageWidth: 800, imageAlt: val.nama, animation: false
+})} width='100px' alt={val.nama}/></TableCell>
                     <TableCell>
-                    <Button animated color='teal' onClick={() => this.onBtnEditClick(val)} style={{width:'100%'}}>
+                    <Button animated color='teal' onClick={() => swal(val.deskripsi)} style={{width:'100%', marginBottom: '3px'}}>
+                        <Button.Content visible>Deskripsi</Button.Content>
+                        <Button.Content hidden>
+                            <Icon name='file alternate outline' />
+                        </Button.Content>
+                    </Button>
+                    <Button animated color='teal' onClick={() => this.onBtnEditClick(val)} style={{width:'100%', marginBottom: '3px'}}>
                         <Button.Content visible>Edit</Button.Content>
                         <Button.Content hidden>
                             <Icon name='edit' />

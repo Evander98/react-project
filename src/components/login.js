@@ -9,6 +9,7 @@ const Cookie = new cookie()
 class Login extends React.Component {
     componentWillReceiveProps(newProps){
         Cookie.set('userData', newProps.username, {path: '/'})
+        Cookie.set('userId', newProps.userId, {path: '/'})
     }
 
     onBtnLoginClick = () => {
@@ -72,6 +73,7 @@ class Login extends React.Component {
 
 const mapStateToProps = (state) => {
     return{
+        userId : state.user.id,
         username : state.user.username,
         loading : state.user.loading,
         error : state.user.error

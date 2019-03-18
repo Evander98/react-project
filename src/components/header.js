@@ -15,6 +15,7 @@ import {
     DropdownToggle,
     DropdownMenu,
     DropdownItem } from 'reactstrap';
+import '../supports/images/NewLogo.png'
 
 const objCookie = new cookie()
 
@@ -35,13 +36,14 @@ class HeaderKu extends React.Component {
 
     onBtnLogout = () => {
         objCookie.remove('userData')
+        objCookie.remove('userId')
         this.props.resetUser()
     }
     render() {
         return (
             <div style={{marginBottom:"75px"}}>
                 <Navbar color="light" light expand="md" fixed="top">
-                    <NavbarBrand className="ml-2" ><Link to='/' style={{color:'black', textDecoration:'none'}}>Rednave</Link> </NavbarBrand>
+                    <NavbarBrand className="ml-2" ><Link to='/'><img src='http://images2.imagebam.com/41/b9/37/b77bff1166938164.png' alt='Logo' width='30px'/></Link></NavbarBrand>
                     <NavbarToggler onClick={this.toggle} />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         {

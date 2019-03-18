@@ -26,6 +26,8 @@ class ProductDetail extends React.Component {
         }
     }
 
+
+
     render(){
         var {nama, harga, stock, discount, img, deskripsi} = this.state.product
         return(
@@ -74,7 +76,7 @@ class ProductDetail extends React.Component {
                             :
                             <div className='row mt-4'>
                                 <input type='button' className='btn btn-outline-primary col-md-8' value='Buy Now' style={{width: '100%', marginLeft: '0.5%', marginBottom: '1%'}}/>
-                                <input type='button' className='btn btn-outline-success col-md-4' style={{marginRight: '0.5%'}} value='Add To Cart'/>
+                                <input type='button' className='btn btn-outline-success col-md-4' style={{marginRight: '0.5%'}} onClick={this.onBtnAddToCart} value='Add To Cart'/>
                                 <input type='button' className='btn btn-outline-success col-md-4' style={{marginLeft: '0.5%'}} value='Add To Wishlist'/>
                             </div>
                         }

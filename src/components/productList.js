@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import '../supports/css/productList.css'
 class ProductList extends React.Component{
-    state = {listProduct : []}
+    state = {listProduct : [], search : ''}
 
     componentDidMount(){
         this.getDataProduct()
@@ -18,8 +18,13 @@ class ProductList extends React.Component{
         .catch((err) => console.log(err))
     }
 
+    onBtnSearchClick = () => {
+        this.setState({search : this.refs.searchBook.value})
+    }
+
     renderProductJsx = () => {
         var jsx = this.state.listProduct.map((val) => {
+            if(val.nama.toLowerCase().includes(this.refs.searchBook.value)){
             return <div className="card m-3" style={{width: '18rem'}}>
                         <Link to={'/product-detail/' + val.id} style={{marginBottom: '45%'}}><img src={val.img} className="card-img-top pointer" alt={val.nama}/></Link>
                         {
@@ -45,6 +50,7 @@ class ProductList extends React.Component{
                             </div>
                         </div>
                     </div>
+            }
         })
         return jsx
     }
@@ -52,10 +58,10 @@ class ProductList extends React.Component{
     render(){
         return(
             <div className='container'>
-                <div className="input-group" style={{width:"350px", position:'relative', left:'70%', margin:'1%'}}>
-                    <input type="text" ref="searchBook" className="form-control" placeholder="Cari apa hari ini?" />
+                <div className="input-group" style={{width:"350px", position:'relative', left:'70.5%', margin:'1%'}}>
+                    <input type="text" ref="searchBook" className="form-control" placeholder="Cari apa hari ini?" onChange={this.onBtnSearchClick}/>
                     <div className="input-group-append mr-2">
-                        <button className="btn border-secondary" type="button" id="button-addon2"><i className="fas fa-search" /></button>
+                        <button className="btn border-secondary" type="button" id="button-addon2"><i onClick={this.onBtnSearchClick} className="fas fa-search" /></button>
                     </div>
                 </div> 
                 <div className='row justify-content-center'>
