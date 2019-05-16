@@ -1,4 +1,6 @@
-import { urlAPI } from '../supports/urlAPI'
-import Axios from 'axios'
-import cookie from 'universal-cookie'
-
+export const hitungCart = (jumlahCart) => {
+    return{
+        type : 'UBAH_JUMLAH_CART',
+        payload : jumlahCart
+    }
+}

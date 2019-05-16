@@ -40,6 +40,11 @@ class Register extends React.Component {
                     </div>
         }
     }
+
+    showPassword = () => {
+        this.refs.password.type === 'password' ?
+        this.refs.password.type = 'text' : this.refs.password.type = 'password'
+    }
     
     render(){
         if(this.props.username !== ''){
@@ -55,35 +60,42 @@ class Register extends React.Component {
                                 <div className="form-group row">
                                     <label className="col-sm-3 col-form-label">Username</label>
                                     <div className="col-sm-9">
-                                    <input type="text" ref="username" className="form-control" id="inputUsername" placeholder="Username" required autoFocus/>
+                                        <input type="text" ref="username" className="form-control" id="inputUsername" placeholder="Username" required autoFocus/>
                                     </div>
                                 </div>
 
                                 <div className="form-group row">
                                     <label className="col-sm-3 col-form-label">Password</label>
                                     <div className="col-sm-9">
-                                    <input type="password" ref="password" className="form-control" id="inputPassword" placeholder="Password" required />
+                                        <div className='row justify-content-sm-end '>
+                                            <div classname='col-sm-3' style={{width: '77.5%'}}>
+                                                <input type="password" ref="password" className="form-control" id="inputPassword" placeholder="Password" required/>
+                                            </div>
+                                            <div className='col-sm-2'>
+                                                <input type="checkbox" className='form' onClick={this.showPassword}/>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div className="form-group row">
                                     <label className="col-sm-3 col-form-label">Email</label>
                                     <div className="col-sm-9">
-                                    <input type="email" ref="email" className="form-control" id="inputEmail" placeholder="Email@mail.com" required />
+                                        <input type="email" ref="email" className="form-control" id="inputEmail" placeholder="Email@mail.com" required />
                                     </div>
                                 </div>
 
                                 <div className="form-group row">
                                     <label className="col-sm-3 col-form-label">Phone</label>
                                     <div className="col-sm-9">
-                                    <input type="phone" ref="phone" className="form-control" id="inputPhone" placeholder="Ex: 0822xxxxxxxx" required />
+                                        <input type="phone" ref="phone" className="form-control" id="inputPhone" placeholder="Ex: 08xxxxxxxxxx" required />
                                     </div>
                                 </div>
                                 
                                 <div className="form-group row">
                                     <div className="col-12" style={{textAlign : 'center'}}>
-                                    {this.renderBtnOrLoading()}
-                                    {this.renderErrorMessage()}
+                                        {this.renderBtnOrLoading()}
+                                        {this.renderErrorMessage()}
                                     </div>
                                         
                                 </div>

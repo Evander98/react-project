@@ -14,7 +14,7 @@ import FirstPageIcon from '@material-ui/icons/FirstPage';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
-import { Button, Icon, Input, Label } from 'semantic-ui-react'
+import { Button, Icon, Input, Label, TextArea } from 'semantic-ui-react'
 import { urlAPI } from '../../supports/urlAPI'
 import { connect } from 'react-redux'
 import PageNotFound from '../404'
@@ -22,6 +22,7 @@ import Axios from 'axios';
 import cookie from 'universal-cookie'
 import swal from 'sweetalert'
 import Swal2 from 'sweetalert2'
+import CurrencyFormat from 'react-currency-format'
 
 
 const objCookie = new cookie()
@@ -124,7 +125,9 @@ class CustomPaginationActionsTable extends React.Component {
         page: 0,
         rowsPerPage: 5,
         isEdit: false,
-        editItem: {}
+        editItem: {},
+        selectedFile : null,
+        selectedFileEdit : null
     };
 
     componentDidMount(){
@@ -133,8 +136,8 @@ class CustomPaginationActionsTable extends React.Component {
     }
 
     getDataApi = (userId) => {
-        Axios.get(urlAPI + '/products?idAdmin=' + userId)
-        .then((res) => {console.log(res); this.setState({rows: res.data})})
+        Axios.get(urlAPI + '/products/productsByUserId?idAdmin=' + userId)
+        .then((res) => this.setState({rows: res.data}))
         .catch((err) => console.log(err))
     }
 
@@ -151,30 +154,62 @@ class CustomPaginationActionsTable extends React.Component {
         return s.charAt(0).toUpperCase() + s.slice(1)
     }
 
+    onChangeHandler = (event) => {
+        this.setState({selectedFile : event.target.files[0]})
+    }
+
+    onChangeHandlerEdit = (event) => {
+        this.setState({selectedFileEdit : event.target.files[0]})
+    }
+
+    valueHandler = () => {
+        var value = this.state.selectedFile ? this.state.selectedFile.name : 'Pick A Picture'
+        return value
+    }
+
+    valueHandlerEdit = () => {
+        var value = this.state.selectedFileEdit ? this.state.selectedFileEdit.name : 'Pick A Picture'
+        return value
+    }
+
     onBtnAdd = () => {
-        var nama = this.nama.inputRef.value
-        var harga = this.harga.inputRef.value
-        var stock = this.stock.inputRef.value
-        var discount = this.discount.inputRef.value
-        var category = this.category.inputRef.value
-        var img = this.img.inputRef.value
-        var deskripsi = this.deskripsi.inputRef.value
-        var idAdmin = this.props.id
-        if(nama === '' || harga === '' || stock === '' || discount === '' || category === '' || img === '' || deskripsi === ''){
+        var product_name = this.nama.inputRef.value
+        var product_price = this.harga.inputRef.value
+        var product_stocks = this.stock.inputRef.value
+        var product_discount = this.discount.inputRef.value ? this.discount.inputRef.value : 0
+        var product_category = this.category.inputRef.value
+        var product_description = this.refs.deskripsi.value
+        var id_user = this.props.id
+        if(product_name === '' || product_price === '' || product_price === '' || product_category === '' || this.refs.img.value === '' || product_description === ''){
             swal("Wait!", "Fill all the forms!", "error")
         } else{
-            var newData = {nama, harga : parseInt(harga), stock : parseInt(stock), discount : parseInt(discount), category : this.capitalize(category), img, deskripsi, idAdmin}
-            Axios.post(urlAPI + '/products', newData)
+            var newData = {
+                product_name,
+                product_price : parseInt(product_price),
+                product_stocks : parseInt(product_stocks),
+                product_discount : parseInt(product_discount),
+                product_category : this.capitalize(product_category),
+                product_description,
+                id_user
+            }
+            var fd = new FormData()
+            fd.append('product_image', this.state.selectedFile, this.state.selectedFile.name)
+            fd.append('data', JSON.stringify(newData))
+            Axios.post(urlAPI + '/products/addProduct', fd)
             .then((res) => {
-                swal("Add Product", "Add Product Success", "success")
-                this.getDataApi()
-                this.nama.inputRef.value = ''
-                this.harga.inputRef.value = ''
-                this.stock.inputRef.value = ''
-                this.discount.inputRef.value = ''
-                this.category.inputRef.value = ''
-                this.img.inputRef.value = ''
-                this.deskripsi.inputRef.value = ''
+                if(res.data.error){
+                    alert(res.data.msg)
+                } else{
+                    swal("Add Product", res.data, "success")
+                    var cookies = objCookie.get('userId')
+                    this.getDataApi(cookies)
+                    this.nama.inputRef.value = ''
+                    this.harga.inputRef.value = ''
+                    this.stock.inputRef.value = ''
+                    this.discount.inputRef.value = ''
+                    this.category.inputRef.value = ''
+                    this.refs.deskripsi.value = ''
+                }
             })
             .catch((err) => console.log(err))
         }
@@ -189,31 +224,53 @@ class CustomPaginationActionsTable extends React.Component {
     }
 
     onBtnSave = () => {
-        var nama = this.namaEdit.inputRef.value === '' ? this.state.editItem.nama : this.namaEdit.inputRef.value
-        var harga = this.hargaEdit.inputRef.value === '' ? this.state.editItem.harga : this.hargaEdit.inputRef.value
-        var stock = this.stockEdit.inputRef.value === '' ? this.state.editItem.stock : this.stockEdit.inputRef.value
-        var discount = this.discountEdit.inputRef.value === '' ? this.state.editItem.discount : this.discountEdit.inputRef.value
-        var category = this.categoryEdit.inputRef.value === '' ? this.state.editItem.category : this.categoryEdit.inputRef.value
-        var img = this.imgEdit.inputRef.value === '' ? this.state.editItem.img : this.imgEdit.inputRef.value
-        var deskripsi = this.deskripsiEdit.inputRef.value === '' ? this.state.editItem.deskripsi : this.deskripsiEdit.inputRef.value
-        var idAdmin = this.props.id
-        var newData = {nama, harga : parseInt(harga), stock : parseInt(stock), discount : parseInt(discount), category : this.capitalize(category), img, deskripsi, idAdmin}
-        Axios.put(urlAPI + '/products/' + this.state.editItem.id, newData)
-        .then((res) => {
-            this.getDataApi()
-            swal('Edit Product Success', '' ,'success')
-            this.setState({isEdit : false, editItem : {}})
-        })
-        .catch((err) => {
-            console.log(err)
-        })
+        var product_name = this.namaEdit.inputRef.value === '' ? this.state.editItem.product_name : this.namaEdit.inputRef.value
+        var product_price = this.hargaEdit.inputRef.value === '' ? this.state.editItem.product_price : this.hargaEdit.inputRef.value
+        var product_stocks = this.stockEdit.inputRef.value === '' ? this.state.editItem.product_stocks : this.stockEdit.inputRef.value
+        var product_discount = this.discountEdit.inputRef.value === '' ? this.state.editItem.product_discount : this.discountEdit.inputRef.value
+        var product_category = this.categoryEdit.inputRef.value === '' ? this.state.editItem.product_category : this.categoryEdit.inputRef.value
+        var product_description = this.refs.deskripsiEdit.value === '' ? this.state.editItem.product_description : this.refs.deskripsiEdit.value
+        var id_user = this.props.id
+        var newData = {
+            product_name,
+            product_price : parseInt(product_price),
+            product_stocks : parseInt(product_stocks),
+            product_discount : parseInt(product_discount),
+            product_category : this.capitalize(product_category),
+            product_description,
+            id_user
+        }
+        var cookies = objCookie.get('userId')
+        if(this.state.selectedFileEdit){
+            var fd = new FormData()
+            fd.append('product_image_edit', this.state.selectedFileEdit)
+            fd.append('data', JSON.stringify(newData))
+            fd.append('imageBefore', this.state.editItem.product_image)
+            Axios.put(urlAPI + '/products/editProduct/' + this.state.editItem.id, fd)
+            .then((res) => {
+                this.getDataApi(cookies)
+                this.setState({isEdit : false})
+                swal('Edit Product', res.data ,'success')
+                
+            })
+            .catch((err) => console.log(err))
+        }else{
+            Axios.put(urlAPI + '/products/editProduct/' + this.state.editItem.id, newData)
+            .then((res) => {
+                this.getDataApi(cookies)
+                this.setState({isEdit : false})
+                swal('Edit Product', res.data ,'success')
+            })
+            .catch((err) => console.log(err))
+        }
     }
 
     onBtnDelete = (id) => {
-        Axios.delete(urlAPI + '/products/' + id)
+        Axios.delete(urlAPI + '/products/deleteProduct/' + id)
         .then((res) => {
             var cookies = objCookie.get('userId')
             this.getDataApi(cookies)
+            swal('Delete Product', res.data ,'success')
         })
         .catch((err) => console.log(err))
     }
@@ -223,15 +280,18 @@ class CustomPaginationActionsTable extends React.Component {
             return(
                 <TableRow key={val.id}>
                     <TableCell>{index+1}</TableCell>
-                    <TableCell>{val.nama}</TableCell>
-                    <TableCell>{val.harga}</TableCell>
-                    <TableCell>{val.stock}</TableCell>
-                    <TableCell>{val.discount}</TableCell>
-                    <TableCell>{val.category}</TableCell>
-                    <TableCell><img src={val.img} className='pointer' onClick={() => Swal2.fire({imageUrl: val.img, imageWidth: 800, imageAlt: val.nama, animation: false
-})} width='100px' alt={val.nama}/></TableCell>
+                    <TableCell>{val.product_name}</TableCell>
                     <TableCell>
-                    <Button animated color='teal' onClick={() => swal(val.deskripsi)} style={{width:'100%', marginBottom: '3px'}}>
+                        <CurrencyFormat value={val.product_price} displayType={'text'} thousandSeparator={true} prefix={'Rp.'} />
+                    </TableCell>
+                    <TableCell>{val.product_stocks}</TableCell>
+                    <TableCell>{val.product_discount}</TableCell>
+                    <TableCell>{val.product_category}</TableCell>
+                    <TableCell>
+                        <img src={urlAPI + '/' + val.product_image} className='pointer' onClick={() => Swal2.fire({imageUrl: urlAPI + '/' + val.product_image, imageWidth: 800, imageAlt: val.product_name, animation: false})} width='100px' alt={val.product_name}/>
+                    </TableCell>
+                    <TableCell>
+                    <Button animated color='teal' onClick={() => swal(val.product_description)} style={{width:'100%', marginBottom: '3px'}}>
                         <Button.Content visible>Deskripsi</Button.Content>
                         <Button.Content hidden>
                             <Icon name='file alternate outline' />
@@ -260,7 +320,7 @@ class CustomPaginationActionsTable extends React.Component {
         const { classes } = this.props;
         const { rows, rowsPerPage, page } = this.state;
         const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
-        var { nama, harga, stock, discount, category, img, deskripsi } = this.state.editItem
+        var { product_name, product_price, product_stocks, product_discount, product_category } = this.state.editItem
 
         if(this.props.role === 'admin'){
             return (
@@ -270,7 +330,7 @@ class CustomPaginationActionsTable extends React.Component {
                         <Table className={classes.table}>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell style={{fontSize:'20px', fontWeight: '600'}}>ID</TableCell>
+                                    <TableCell style={{fontSize:'20px', fontWeight: '600'}}>NO</TableCell>
                                     <TableCell style={{fontSize:'20px', fontWeight: '600'}}>NAMA</TableCell>
                                     <TableCell style={{fontSize:'20px', fontWeight: '600'}}>HARGA</TableCell>
                                     <TableCell style={{fontSize:'20px', fontWeight: '600'}}>STOCK</TableCell>
@@ -326,8 +386,9 @@ class CustomPaginationActionsTable extends React.Component {
                                         <Input ref={input => this.stock = input} placeholder='Stock' className='mt-2 ml-2 mb-2'/>
                                         <Input ref={input => this.discount = input} placeholder='Discount' className='mt-2 ml-2 mb-2'/>
                                         <Input ref={input => this.category = input} placeholder='Category' className='mt-2 ml-2 mb-2'/>
-                                        <Input ref={input => this.img = input} placeholder='Image' className='mt-2 ml-2 mb-2'/>
-                                        <Input ref={input => this.deskripsi = input} placeholder='Deskripsi' className='mt-2 ml-2 mb-2'/>
+                                        <input type='file' ref='img' placeholder='Image' style={{display: 'none'}} onChange={this.onChangeHandler}/>
+                                        <input type='button' className='btn btn-success mt-2 ml-2 mb-2' onClick={() => this.refs.img.click()} value={this.valueHandler()} />
+                                        <textarea rows="3" ref='deskripsi' placeholder='Deskripsi(5000)' className='form-control mt-2 ml-2 mb-2'/>
                                         <Button animated color='teal' onClick={this.onBtnAdd} style={{marginLeft: '7px'}}>
                                             <Button.Content visible>Add Product</Button.Content>
                                             <Button.Content hidden>
@@ -351,17 +412,18 @@ class CustomPaginationActionsTable extends React.Component {
                                 <TableBody>
                                     <TableRow>
                                         <TableCell>
-                                            <Input ref={input => this.namaEdit = input} placeholder={nama} className='mt-2 ml-2 mb-2'/>
-                                            <Input ref={input => this.hargaEdit = input} labelPosition='right' type='text' placeholder={harga} className='mt-2 ml-2 mb-2'>
+                                            <Input ref={input => this.namaEdit = input} placeholder={product_name} className='mt-2 ml-2 mb-2'/>
+                                            <Input ref={input => this.hargaEdit = input} labelPosition='right' type='text' placeholder={product_price} className='mt-2 ml-2 mb-2'>
                                             <Label basic>Rp</Label>
                                                 <input />
                                                 <Label>.00</Label>
                                             </Input>
-                                            <Input ref={input => this.stockEdit = input} placeholder={stock} className='mt-2 ml-2 mb-2'/>
-                                            <Input ref={input => this.discountEdit = input} placeholder={discount} className='mt-2 ml-2 mb-2'/>
-                                            <Input ref={input => this.categoryEdit = input} placeholder={category} className='mt-2 ml-2 mb-2'/>
-                                            <Input ref={input => this.imgEdit = input} placeholder={img} className='mt-2 ml-2 mb-2'/>
-                                            <Input ref={input => this.deskripsiEdit = input} placeholder={deskripsi} className='mt-2 ml-2 mb-2'/>
+                                            <Input ref={input => this.stockEdit = input} placeholder={product_stocks} className='mt-2 ml-2 mb-2'/>
+                                            <Input ref={input => this.discountEdit = input} placeholder={product_discount} className='mt-2 ml-2 mb-2'/>
+                                            <Input ref={input => this.categoryEdit = input} placeholder={product_category} className='mt-2 ml-2 mb-2'/>
+                                            <input type='file' ref='imgEdit' placeholder='Image' style={{display: 'none'}} onChange={this.onChangeHandlerEdit}/>
+                                            <input type='button' className='btn btn-success mt-2 ml-2 mb-2' onClick={() => this.refs.imgEdit.click()} value={this.valueHandlerEdit()} />
+                                            <textarea rows="3" ref='deskripsiEdit' placeholder='Deskripsi(5000)' className='form-control mt-2 ml-2 mb-2'/>                                            
                                             <Button animated color='teal' onClick={this.onBtnSave} style={{marginLeft: '7px'}}>
                                                 <Button.Content visible>Save Changes</Button.Content>
                                                 <Button.Content hidden>

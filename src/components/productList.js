@@ -1,10 +1,15 @@
 import React from 'react'
 import Axios from 'axios'
+import cookie from 'universal-cookie'
+import swal from 'sweetalert'
 import CurrencyFormat from 'react-currency-format'
 import { urlAPI } from '../supports/urlAPI'
 import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import '../supports/css/productList.css'
+
+const objCookie = new cookie()
+
 class ProductList extends React.Component{
     state = {listProduct : [], search : ''}
 
@@ -13,8 +18,8 @@ class ProductList extends React.Component{
     }
 
     getDataProduct = () => {
-        Axios.get(urlAPI + '/products')
-        .then((res) => {console.log(res);this.setState({listProduct : res.data})})
+        Axios.get(urlAPI + '/products/productList')
+        .then((res) => this.setState({listProduct : res.data}))
         .catch((err) => console.log(err))
     }
 
@@ -22,34 +27,47 @@ class ProductList extends React.Component{
         this.setState({search : this.refs.searchBook.value})
     }
 
+    onBtnAddToCart = (index) => {
+        var cookieIdUser = objCookie.get('userId')
+        var cart = {
+            id_user : cookieIdUser,
+            id_product : this.state.listProduct[index].id
+        }
+        Axios.post(urlAPI + '/cart/addProductList', cart)
+        .then((res) => swal(res.data, '', 'success'))
+        .catch((err) => console.log(err))
+    }
+
     renderProductJsx = () => {
-        var jsx = this.state.listProduct.map((val) => {
-            if(val.nama.toLowerCase().includes(this.refs.searchBook.value)){
-            return <div className="card m-3" style={{width: '18rem'}}>
-                        <Link to={'/product-detail/' + val.id} style={{marginBottom: '45%'}}><img src={val.img} className="card-img-top pointer" alt={val.nama}/></Link>
+        var jsx = this.state.listProduct.map((val, index) => {
+            if(val.product_name.toLowerCase().includes(this.refs.searchBook.value)){
+            return(
+                    <div className="card m-3" style={{width: '18rem'}}>
+                        <Link to={'/product-detail/' + val.id} style={{marginBottom: '45%'}}><img src={urlAPI + '/' + val.product_image} className="card-img-top pointer" alt={val.product_name}/></Link>
                         {
-                            val.discount > 0 ?
-                            <div className='discount'>{val.discount}% OFF</div>
+                            val.product_discount > 0 ?
+                            <div className='discount'>{val.product_discount}% OFF</div>
                             : null
                         }
                         <div className="card-body" style={{textAlign:'left'}}>
-                            <h5 className="card-title" style={{position: 'absolute', bottom: '105px', left: '10px'}}>{val.nama}</h5>
+                            <h5 className="card-title" style={{position: 'absolute', bottom: '105px', left: '10px'}}>{val.product_name}</h5>
                             <div style={{position: 'absolute', bottom: '10px', left: '10px'}}>
                                 {
-                                    val.discount > 0 ?
-                                    <p className="card-text price-before-discount"><CurrencyFormat value={(val.harga)} displayType={'text'} thousandSeparator={true} prefix={'Rp. '} /></p>
+                                    val.product_discount > 0 ?
+                                    <p className="card-text price-before-discount"><CurrencyFormat value={(val.product_price)} displayType={'text'} thousandSeparator={true} prefix={'Rp. '} /></p>
                                     : null
                                 }
-                                <p className="card-text" style={{fontSize: '18px', fontWeight: '500', color: 'rgb(215,17,73)'}}><CurrencyFormat value={parseInt(val.harga-(val.harga*(val.discount/100)))} displayType={'text'} thousandSeparator={true} prefix={'Rp. '} /></p>
+                                <p className="card-text" style={{fontSize: '18px', fontWeight: '500', color: 'rgb(215,17,73)'}}><CurrencyFormat value={parseInt(val.product_price-(val.product_price*(val.product_discount/100)))} displayType={'text'} thousandSeparator={true} prefix={'Rp. '} /></p>
                                 {
                                     this.props.username === '' ?
                                     <Link to='/login'><input type='button' className="btn btn-primary" value='Add To Cart'/></Link>
                                     :
-                                    <input type='button' className="btn btn-primary" value='Add To Cart'/>
+                                    <input type='button' className="btn btn-primary" value='Add To Cart' onClick={() => this.onBtnAddToCart(index)}/>
                                 }
                             </div>
                         </div>
                     </div>
+                )
             }
         })
         return jsx

@@ -6,6 +6,8 @@ import Register from './components/register'
 import ProductList from './components/productList'
 import ProductDetail from './components/productDetail'
 import Manage from './components/admin/manageProduct'
+import Cart from './components/cart'
+import Verify from './components/verification'
 import Footer from './components/footer'
 import PageNotFound from './components/404'
 import cookie from 'universal-cookie'
@@ -36,6 +38,8 @@ class App extends Component {
           <Route path='/products' component={ProductList} exact/>
           <Route path='/product-detail/:id' component={ProductDetail} exact/>
           <Route path='/manage-product' component={Manage} exact/>
+          <Route path='/cart' component={Cart} exact/>
+          <Route path='/verify' component={Verify} exact/>
           <Route path='*' component={PageNotFound} exact/>
         </Switch>
         <Footer/>

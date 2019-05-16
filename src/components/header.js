@@ -43,7 +43,7 @@ class HeaderKu extends React.Component {
         return (
             <div style={{marginBottom:"75px"}}>
                 <Navbar color="light" light expand="md" fixed="top">
-                    <NavbarBrand className="ml-2" ><Link to='/'><img src='http://images2.imagebam.com/41/b9/37/b77bff1166938164.png' alt='Logo' width='30px'/></Link></NavbarBrand>
+                    <NavbarBrand className="ml-2" ><Link to='/'><img src='http://images2.imagebam.com/41/b9/37/b77bff1166938164.png' alt='Logo' width='35px'/></Link></NavbarBrand>
                     <NavbarToggler onClick={this.toggle} />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         {
@@ -53,7 +53,7 @@ class HeaderKu extends React.Component {
                                     <NavLink>Hi, {this.props.username}</NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <Link to="/"><NavLink className="btn btn-default" style={{fontSize:"14px"}}><i class="fas fa-shopping-cart"></i> Cart</NavLink></Link>
+                                    <Link to="/cart"><NavLink className="btn btn-default" style={{fontSize:"14px"}}>{this.props.jumlahCart} Cart(s)</NavLink></Link>
                                 </NavItem>
                                 <UncontrolledDropdown nav inNavbar>
                                     <DropdownToggle nav caret>
@@ -104,7 +104,8 @@ class HeaderKu extends React.Component {
 const mapStateToProps = (state) => {
     return {
         username : state.user.username,
-        role : state.user.role
+        role : state.user.role,
+        jumlahCart : state.cart.jumlahCart
     }
 }
 

@@ -6,6 +6,10 @@ export default (state = INITIAL_STATE, action) => {
             return {...INITIAL_STATE, loading : true}
         case 'LOGIN_SUCCESS' :
             return {...INITIAL_STATE, id : action.payload.id, username : action.payload.username, role : action.payload.role}
+        case 'REGISTER_SUCCESS' :
+            return {...INITIAL_STATE, error : action.payload, loading : false}
+        case 'NOT_VERIFIED' :
+            return {...INITIAL_STATE, error : 'Email not verified. Please check your email to verified'}
         case 'USER_NOT_FOUND' :
             return {...INITIAL_STATE, error : 'Username or password wrong'}
         case 'USERNAME_NOT_AVAILABLE' :
